@@ -39,16 +39,19 @@
 
 (declare-function frameset-register-p "frameset")
 
+;; FIXME: defcustoms?
 (defvar register-preview-default-keys (mapcar #'string (number-sequence ?a ?z))
   "The keys to use for setting a new register.")
 
 (defvar register-use-preview t
   "Always show register preview when non nil.")
 
+;; FIXME: Change this name.
 (cl-defstruct register-preview-commands
   "Store data for a specific register command."
   types msg act)
 
+;; FIXME: Change this name.
 (cl-defgeneric register-commands-data (command)
   "Returns a `register-preview-commands' object storing data for COMMAND."
   (ignore command))
