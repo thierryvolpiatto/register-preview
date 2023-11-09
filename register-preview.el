@@ -137,9 +137,8 @@ Current register types actually returned are one of:
 - frame
 - kmacro
 
-One can add new type to the corresponding
-`register-commands-data' entry and defining a new `cl-defmethod'
-matching this type. Predicate for type in new `cl-defmethod' should
+One can add new types to a specific command by defining a new `cl-defmethod'
+matching this command. Predicate for type in new `cl-defmethod' should
 satisfy `cl-typep' otherwise the new type should be defined with
 `cl-deftype'."
   ;; Call register--type against the register value.
