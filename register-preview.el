@@ -46,10 +46,10 @@
 (defvar register-use-preview t
   "Always show register preview when non nil.")
 
-;; FIXME: Change this name.
+;; FIXME: Change this name and document slots.
 (cl-defstruct register-preview-commands
   "Store data for a specific register command."
-  types msg act)
+  types msg act smatch)
 
 ;; FIXME: Change this name.
 (cl-defgeneric register-commands-data (command)
@@ -59,33 +59,39 @@
   (make-register-preview-commands
    :types '(string number)
    :msg "Insert register `%s'"
-   :act 'insert))
+   :act 'insert
+   :smatch t))
 (cl-defmethod register-commands-data ((_command (eql jump-to-register)))
   (make-register-preview-commands
    :types  '(window frame marker kmacro
              file buffer file-query)
    :msg "Jump to register `%s'"
-   :act 'jump))
+   :act 'jump
+   :smatch t))
 (cl-defmethod register-commands-data ((_command (eql view-register)))
   (make-register-preview-commands
    :types '(all)
    :msg "View register `%s'"
-   :act 'view))
+   :act 'view
+   :smatch t))
 (cl-defmethod register-commands-data ((_command (eql append-to-register)))
   (make-register-preview-commands
    :types '(string number)
    :msg "Append to register `%s'"
-   :act 'modify))
+   :act 'modify
+   :smatch t))
 (cl-defmethod register-commands-data ((_command (eql prepend-to-register)))
   (make-register-preview-commands
    :types '(string number)
    :msg "Prepend to register `%s'"
-   :act 'modify))
+   :act 'modify
+   :smatch t))
 (cl-defmethod register-commands-data ((_command (eql increment-register)))
   (make-register-preview-commands
    :types '(string number)
    :msg "Increment register `%s'"
-   :act 'modify))
+   :act 'modify
+   :smatch t))
 
 (defun register-preview-forward-line (arg)
   "Move to next or previous line in register preview buffer.
@@ -213,11 +219,12 @@ display such a window regardless."
                 (set-keymap-parent m minibuffer-local-map)
                 m))
          (data (register-commands-data this-command))
-         types msg result timer act win strs)
+         types msg result timer act win strs smatch)
     (if data
-        (setq types (register-preview-commands-types data)
-              msg   (register-preview-commands-msg   data)
-              act   (register-preview-commands-act   data))
+        (setq types  (register-preview-commands-types data)
+              msg    (register-preview-commands-msg   data)
+              act    (register-preview-commands-act   data)
+              smatch (register-preview-commands-smatch data))
       (setq types '(all)
             msg   "Overwrite register `%s'"
             act   'set))
@@ -250,9 +257,18 @@ display such a window regardless."
                           (with-selected-window (minibuffer-window)
                             (let ((input (minibuffer-contents)))
                               (when (> (length input) 1)
-                                (setq input (substring input 1))
+                                (let ((new (substring input 1))
+                                      (old (substring input 0 1)))
+                                  (setq input (if (or (null smatch)
+                                                      (member new strs))
+                                                  new old))
+                                  (delete-minibuffer-contents)
+                                  (insert input)))
+                              (when (and smatch (not (string= input ""))
+                                         (not (member input strs)))
+                                (setq input "")
                                 (delete-minibuffer-contents)
-                                (insert input))
+                                (minibuffer-message "Not matching"))
                               (when (not (string= input pat))
                                 (setq pat input))))
                           (if (setq win (get-buffer-window buffer))
