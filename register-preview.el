@@ -46,48 +46,50 @@
 (defvar register-use-preview t
   "Always show register preview when non nil.")
 
-;; FIXME: Change this name and document slots.
-(cl-defstruct register-preview-commands
-  "Store data for a specific register command."
+(cl-defstruct register-preview-info
+  "Store data for a specific register command.
+TYPES are the types of register supported.
+MSG is the minibuffer message to send when a register is selected.
+ACT is the type of action the command is doing on register.
+SMATCH accept a boolean value to say if command accept non matching register."
   types msg act smatch)
 
-;; FIXME: Change this name.
-(cl-defgeneric register-commands-data (command)
-  "Returns a `register-preview-commands' object storing data for COMMAND."
+(cl-defgeneric register-command-info (command)
+  "Returns a `register-preview-info' object storing data for COMMAND."
   (ignore command))
-(cl-defmethod register-commands-data ((_command (eql insert-register)))
-  (make-register-preview-commands
+(cl-defmethod register-command-info ((_command (eql insert-register)))
+  (make-register-preview-info
    :types '(string number)
    :msg "Insert register `%s'"
    :act 'insert
    :smatch t))
-(cl-defmethod register-commands-data ((_command (eql jump-to-register)))
-  (make-register-preview-commands
+(cl-defmethod register-command-info ((_command (eql jump-to-register)))
+  (make-register-preview-info
    :types  '(window frame marker kmacro
              file buffer file-query)
    :msg "Jump to register `%s'"
    :act 'jump
    :smatch t))
-(cl-defmethod register-commands-data ((_command (eql view-register)))
-  (make-register-preview-commands
+(cl-defmethod register-command-info ((_command (eql view-register)))
+  (make-register-preview-info
    :types '(all)
    :msg "View register `%s'"
    :act 'view
    :smatch t))
-(cl-defmethod register-commands-data ((_command (eql append-to-register)))
-  (make-register-preview-commands
+(cl-defmethod register-command-info ((_command (eql append-to-register)))
+  (make-register-preview-info
    :types '(string number)
    :msg "Append to register `%s'"
    :act 'modify
    :smatch t))
-(cl-defmethod register-commands-data ((_command (eql prepend-to-register)))
-  (make-register-preview-commands
+(cl-defmethod register-command-info ((_command (eql prepend-to-register)))
+  (make-register-preview-info
    :types '(string number)
    :msg "Prepend to register `%s'"
    :act 'modify
    :smatch t))
-(cl-defmethod register-commands-data ((_command (eql increment-register)))
-  (make-register-preview-commands
+(cl-defmethod register-command-info ((_command (eql increment-register)))
+  (make-register-preview-info
    :types '(string number)
    :msg "Increment register `%s'"
    :act 'modify
@@ -218,13 +220,13 @@ display such a window regardless."
          (map (let ((m (make-sparse-keymap)))
                 (set-keymap-parent m minibuffer-local-map)
                 m))
-         (data (register-commands-data this-command))
+         (data (register-command-info this-command))
          types msg result timer act win strs smatch)
     (if data
-        (setq types  (register-preview-commands-types data)
-              msg    (register-preview-commands-msg   data)
-              act    (register-preview-commands-act   data)
-              smatch (register-preview-commands-smatch data))
+        (setq types  (register-preview-info-types data)
+              msg    (register-preview-info-msg   data)
+              act    (register-preview-info-act   data)
+              smatch (register-preview-info-smatch data))
       (setq types '(all)
             msg   "Overwrite register `%s'"
             act   'set))
