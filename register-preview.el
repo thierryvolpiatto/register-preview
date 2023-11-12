@@ -202,10 +202,12 @@ Format of each entry is controlled by the variable `register-preview-function'."
                     (insert (funcall register-preview-function elem))))
                 registers))))))
 
-(defun register-preview-get-defaults (action)
-  "Returns available keys in `register-preview-default-keys'.
-It is the keys not already token in `register-alist' according to ACTION."
-  (unless (memq action '(insert jump modify))
+(cl-defgeneric register-preview-get-defaults (action)
+  "Should returns default registers according to ACTION.
+This default function returns available keys in
+`register-preview-default-keys' not already in `register-alist' unless
+ACTION is one of (insert jump view modify)."
+  (unless (memq action '(insert jump view modify))
     (cl-loop for s in register-preview-default-keys
              unless (assoc (string-to-char s) register-alist)
              collect s)))
@@ -233,7 +235,7 @@ display such a window regardless."
     (setq strs (mapcar (lambda (x)
                          (string (car x)))
                        (register-of-type-alist types)))
-    (when (and (memq act '(insert jump)) (null strs))
+    (when (and (memq act '(insert jump view)) (null strs))
       (error "No register suitable for `%s'" act))
     (dolist (k (cons help-char help-event-list))
       (define-key map
