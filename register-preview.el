@@ -203,14 +203,12 @@ Format of each entry is controlled by the variable `register-preview-function'."
                 registers))))))
 
 (cl-defgeneric register-preview-get-defaults (action)
-  "Should returns default registers according to ACTION.
-This default function returns available keys in
-`register-preview-default-keys' not already in `register-alist' unless
-ACTION is one of (insert jump view modify)."
-  (unless (memq action '(insert jump view modify))
-    (cl-loop for s in register-preview-default-keys
-             unless (assoc (string-to-char s) register-alist)
-             collect s)))
+  "Returns default registers according to ACTION."
+  (ignore action))
+(cl-defmethod register-preview-get-defaults ((_action (eql set)))
+  (cl-loop for s in register-preview-default-keys
+           unless (assoc (string-to-char s) register-alist)
+           collect s))
 
 (defun advice--register-read-with-preview (prompt)
   "Read and return a register name, possibly showing existing registers.
