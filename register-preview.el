@@ -60,7 +60,7 @@ SMATCH accept a boolean value to say if command accept non matching register."
   types msg act smatch)
 
 (cl-defgeneric register-preview-command-info (command)
-  "Returns a `register-preview-info' object storing data for COMMAND."
+  "Return a `register-preview-info' object storing data for COMMAND."
   (ignore command))
 (cl-defmethod register-preview-command-info ((_command (eql insert-register)))
   (make-register-preview-info
@@ -154,7 +154,7 @@ Current register types actually returned are one of:
 - kmacro
 
 One can add new types to a specific command by defining a new `cl-defmethod'
-matching this command. Predicate for type in new `cl-defmethod' should
+matching this command.  Predicate for type in new `cl-defmethod' should
 satisfy `cl-typep' otherwise the new type should be defined with
 `cl-deftype'."
   ;; Call register-preview--type against the register value.
@@ -163,7 +163,7 @@ satisfy `cl-typep' otherwise the new type should be defined with
                    (cdr register))))
 
 (cl-defgeneric register-preview--type (regval)
-  "Returns type of register value REGVAL."
+  "Return type of register value REGVAL."
   (ignore regval))
 
 (cl-defmethod register-preview--type ((_regval string)) 'string)
@@ -190,7 +190,7 @@ satisfy `cl-typep' otherwise the new type should be defined with
   "Pop up a window showing the registers preview in BUFFER.
 If SHOW-EMPTY is non-nil, show the window even if no registers.
 Argument TYPES (a list) specify the types of register to show, when nil show all
-registers, see `register-preview-get-type' for suitable types. 
+registers, see `register-preview-get-type' for suitable types.
 Format of each entry is controlled by the variable `register-preview-function'."
   (let ((registers (register-preview-filter-alist (or types '(all)))))
     (when (or show-empty (consp registers))
@@ -208,7 +208,7 @@ Format of each entry is controlled by the variable `register-preview-function'."
                 registers))))))
 
 (cl-defgeneric register-preview-get-defaults (action)
-  "Returns default registers according to ACTION."
+  "Return default registers according to ACTION."
   (ignore action))
 (cl-defmethod register-preview-get-defaults ((_action (eql set)))
   (cl-loop for s in register-preview-default-keys
@@ -323,3 +323,7 @@ display such a window regardless."
 (provide 'register-preview)
 
 ;;; register-preview ends here
+
+(provide 'register-preview)
+
+;;; register-preview.el ends here
