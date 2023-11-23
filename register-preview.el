@@ -1,4 +1,4 @@
-;;; register-preview.el --- Enhance vanilla emacs register-preview -*- lexical-binding: t -*-
+;;; register-preview.el --- Enhance register-preview -*- lexical-binding: t -*-
 
 ;; Author: Thierry Volpiatto <thievol@posteo.net>
 ;; Copyright (C) 2023 Thierry Volpiatto, all rights reserved.
@@ -124,7 +124,7 @@ Do nothing when defining or executing kmacros."
                      (or (> arg 0) (eql pos (point))))
             (goto-char (funcall posfn)))
           (setq str (buffer-substring-no-properties
-                     (pos-bol) (1+ (pos-bol))))
+                     (point-at-bol) (1+ (point-at-bol))))
           (remove-overlays)
           (with-selected-window (minibuffer-window)
             (delete-minibuffer-contents)
@@ -287,7 +287,7 @@ display such a window regardless."
                                     (if (re-search-forward (concat "^" pat) nil t)
                                         (progn (move-overlay
                                                 ov
-                                                (match-beginning 0) (pos-eol))
+                                                (match-beginning 0) (point-at-eol))
                                                (overlay-put ov 'face 'match)
                                                (when msg
                                                  (with-selected-window (minibuffer-window)
@@ -312,6 +312,7 @@ display such a window regardless."
         (and (window-live-p w) (delete-window w)))
       (and (get-buffer buffer) (kill-buffer buffer)))))
 
+;;;###autoload
 (define-minor-mode register-preview-mode
     "Enhanced register preview for all register commands."
   :global t
