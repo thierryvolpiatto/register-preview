@@ -323,8 +323,4 @@ display such a window regardless."
 
 (provide 'register-preview)
 
-;;; register-preview ends here
-
-(provide 'register-preview)
-
 ;;; register-preview.el ends here
