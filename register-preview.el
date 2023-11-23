@@ -30,7 +30,7 @@
 ;; Fully configurable with generics when new register commands are created.
 ;;
 ;; NOTE: `register-read-with-preview' is adviced in this package with
-;; `advice--register-read-with-preview'.
+;; `register-preview--read-with-preview'.
 
 ;;; code:
 
@@ -39,12 +39,17 @@
 
 (declare-function frameset-register-p "frameset")
 
-;; FIXME: defcustoms?
-(defvar register-preview-default-keys (mapcar #'string (number-sequence ?a ?z))
-  "The keys to use for setting a new register.")
+(defgroup register-preview nil
+  "Register preview for register commands."
+  :group 'register)
 
-(defvar register-use-preview t
-  "Always show register preview when non nil.")
+(defcustom register-preview-default-keys (mapcar #'string (number-sequence ?a ?z))
+  "The keys to use for setting a new register."
+  :type '(repeat string))
+
+(defcustom register-preview-use-preview t
+  "Always show register preview when non nil."
+  :type 'boolean)
 
 (cl-defstruct register-preview-info
   "Store data for a specific register command.
@@ -54,41 +59,41 @@ ACT is the type of action the command is doing on register.
 SMATCH accept a boolean value to say if command accept non matching register."
   types msg act smatch)
 
-(cl-defgeneric register-command-info (command)
+(cl-defgeneric register-preview-command-info (command)
   "Returns a `register-preview-info' object storing data for COMMAND."
   (ignore command))
-(cl-defmethod register-command-info ((_command (eql insert-register)))
+(cl-defmethod register-preview-command-info ((_command (eql insert-register)))
   (make-register-preview-info
    :types '(string number)
    :msg "Insert register `%s'"
    :act 'insert
    :smatch t))
-(cl-defmethod register-command-info ((_command (eql jump-to-register)))
+(cl-defmethod register-preview-command-info ((_command (eql jump-to-register)))
   (make-register-preview-info
    :types  '(window frame marker kmacro
              file buffer file-query)
    :msg "Jump to register `%s'"
    :act 'jump
    :smatch t))
-(cl-defmethod register-command-info ((_command (eql view-register)))
+(cl-defmethod register-preview-command-info ((_command (eql view-register)))
   (make-register-preview-info
    :types '(all)
    :msg "View register `%s'"
    :act 'view
    :smatch t))
-(cl-defmethod register-command-info ((_command (eql append-to-register)))
+(cl-defmethod register-preview-command-info ((_command (eql append-to-register)))
   (make-register-preview-info
    :types '(string number)
    :msg "Append to register `%s'"
    :act 'modify
    :smatch t))
-(cl-defmethod register-command-info ((_command (eql prepend-to-register)))
+(cl-defmethod register-preview-command-info ((_command (eql prepend-to-register)))
   (make-register-preview-info
    :types '(string number)
    :msg "Prepend to register `%s'"
    :act 'modify
    :smatch t))
-(cl-defmethod register-command-info ((_command (eql increment-register)))
+(cl-defmethod register-preview-command-info ((_command (eql increment-register)))
   (make-register-preview-info
    :types '(string number)
    :msg "Increment register `%s'"
@@ -135,7 +140,7 @@ Do nothing when defining or executing kmacros."
   (interactive)
   (register-preview-forward-line -1))
 
-(defun register-type (register)
+(defun register-preview-get-type (register)
   "Return REGISTER type.
 Current register types actually returned are one of:
 - string
@@ -152,42 +157,42 @@ One can add new types to a specific command by defining a new `cl-defmethod'
 matching this command. Predicate for type in new `cl-defmethod' should
 satisfy `cl-typep' otherwise the new type should be defined with
 `cl-deftype'."
-  ;; Call register--type against the register value.
-  (register--type (if (consp (cdr register))
+  ;; Call register-preview--type against the register value.
+  (register-preview--type (if (consp (cdr register))
                      (cadr register)
                    (cdr register))))
 
-(cl-defgeneric register--type (regval)
+(cl-defgeneric register-preview--type (regval)
   "Returns type of register value REGVAL."
   (ignore regval))
 
-(cl-defmethod register--type ((_regval string)) 'string)
-(cl-defmethod register--type ((_regval number)) 'number)
-(cl-defmethod register--type ((_regval marker)) 'marker)
-(cl-defmethod register--type ((_regval (eql 'buffer))) 'buffer)
-(cl-defmethod register--type ((_regval (eql 'file))) 'file)
-(cl-defmethod register--type ((_regval (eql 'file-query))) 'file-query)
-(cl-defmethod register--type ((_regval window-configuration)) 'window)
+(cl-defmethod register-preview--type ((_regval string)) 'string)
+(cl-defmethod register-preview--type ((_regval number)) 'number)
+(cl-defmethod register-preview--type ((_regval marker)) 'marker)
+(cl-defmethod register-preview--type ((_regval (eql 'buffer))) 'buffer)
+(cl-defmethod register-preview--type ((_regval (eql 'file))) 'file)
+(cl-defmethod register-preview--type ((_regval (eql 'file-query))) 'file-query)
+(cl-defmethod register-preview--type ((_regval window-configuration)) 'window)
 (cl-deftype frame-register () '(satisfies frameset-register-p))
-(cl-defmethod register--type :extra "frame-register" (_regval) 'frame)
+(cl-defmethod register-preview--type :extra "frame-register" (_regval) 'frame)
 (cl-deftype kmacro-register () '(satisfies kmacro-register-p))
-(cl-defmethod register--type :extra "kmacro-register" (_regval) 'kmacro)
+(cl-defmethod register-preview--type :extra "kmacro-register" (_regval) 'kmacro)
 
-(defun register-of-type-alist (types)
+(defun register-preview-filter-alist (types)
   "Filter `register-alist' according to TYPES."
   (if (memq 'all types)
       register-alist
     (cl-loop for register in register-alist
-             when (memq (register-type register) types)
+             when (memq (register-preview-get-type register) types)
              collect register)))
 
-(defun register-preview-1 (buffer &optional show-empty types)
+(defun register-preview-preview (buffer &optional show-empty types)
   "Pop up a window showing the registers preview in BUFFER.
 If SHOW-EMPTY is non-nil, show the window even if no registers.
 Argument TYPES (a list) specify the types of register to show, when nil show all
-registers, see `register-type' for suitable types. 
+registers, see `register-preview-get-type' for suitable types. 
 Format of each entry is controlled by the variable `register-preview-function'."
-  (let ((registers (register-of-type-alist (or types '(all)))))
+  (let ((registers (register-preview-filter-alist (or types '(all)))))
     (when (or show-empty (consp registers))
       (with-current-buffer-window
         buffer
@@ -210,7 +215,7 @@ Format of each entry is controlled by the variable `register-preview-function'."
            unless (assoc (string-to-char s) register-alist)
            collect s))
 
-(defun advice--register-read-with-preview (prompt)
+(defun register-preview--read-with-preview (prompt)
   "Read and return a register name, possibly showing existing registers.
 Prompt with the string PROMPT.
 If `help-char' (or a member of `help-event-list') is pressed,
@@ -220,7 +225,7 @@ display such a window regardless."
          (map (let ((m (make-sparse-keymap)))
                 (set-keymap-parent m minibuffer-local-map)
                 m))
-         (data (register-command-info this-command))
+         (data (register-preview-command-info this-command))
          types msg result timer act win strs smatch)
     (if data
         (setq types  (register-preview-info-types data)
@@ -232,7 +237,7 @@ display such a window regardless."
             act   'set))
     (setq strs (mapcar (lambda (x)
                          (string (car x)))
-                       (register-of-type-alist types)))
+                       (register-preview-filter-alist types)))
     (when (and (memq act '(insert jump view)) (null strs))
       (error "No register suitable for `%s'" act))
     (dolist (k (cons help-char help-event-list))
@@ -241,13 +246,13 @@ display such a window regardless."
                        (interactive)
                        (unless (get-buffer-window buffer)
                          (with-selected-window (minibuffer-selected-window)
-                           (register-preview-1 buffer 'show-empty types))))))
+                           (register-preview-preview buffer 'show-empty types))))))
     (define-key map (kbd "<down>") 'register-preview-next)
     (define-key map (kbd "<up>")   'register-preview-previous)
     (define-key map (kbd "C-n")    'register-preview-next)
     (define-key map (kbd "C-p")    'register-preview-previous)
-    (unless (or executing-kbd-macro (null register-use-preview))
-      (register-preview-1 buffer nil types))
+    (unless (or executing-kbd-macro (null register-preview-use-preview))
+      (register-preview-preview buffer nil types))
     (unwind-protect
          (progn
            (minibuffer-with-setup-hook
@@ -306,7 +311,14 @@ display such a window regardless."
       (let ((w (get-buffer-window buffer)))
         (and (window-live-p w) (delete-window w)))
       (and (get-buffer buffer) (kill-buffer buffer)))))
-(advice-add 'register-read-with-preview :override #'advice--register-read-with-preview)
+
+(define-minor-mode register-preview-mode
+    "Enhanced register preview for all register commands."
+  :global t
+  (if register-preview-mode
+      (advice-add 'register-read-with-preview :override #'register-preview--read-with-preview)
+    (advice-remove 'register-read-with-preview #'register-preview--read-with-preview)))
+
 
 (provide 'register-preview)
 
