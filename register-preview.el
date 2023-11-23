@@ -120,7 +120,7 @@ Do nothing when defining or executing kmacros."
                      (or (> arg 0) (eql pos (point))))
             (goto-char (funcall posfn)))
           (setq str (buffer-substring-no-properties
-                     (point-at-bol) (1+ (point-at-bol))))
+                     (line-beginning-position) (1+ (line-beginning-position))))
           (remove-overlays)
           (with-selected-window (minibuffer-window)
             (delete-minibuffer-contents)
@@ -283,7 +283,7 @@ display such a window regardless."
                                     (if (re-search-forward (concat "^" pat) nil t)
                                         (progn (move-overlay
                                                 ov
-                                                (match-beginning 0) (point-at-eol))
+                                                (match-beginning 0) (line-end-position))
                                                (overlay-put ov 'face 'match)
                                                (when msg
                                                  (with-selected-window (minibuffer-window)
