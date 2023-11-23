@@ -47,10 +47,6 @@
   "The keys to use for setting a new register."
   :type '(repeat string))
 
-(defcustom register-preview-use-preview t
-  "Always show register preview when non nil."
-  :type 'boolean)
-
 (cl-defstruct register-preview-info
   "Store data for a specific register command.
 TYPES are the types of register supported.
@@ -251,7 +247,7 @@ display such a window regardless."
     (define-key map (kbd "<up>")   'register-preview-previous)
     (define-key map (kbd "C-n")    'register-preview-next)
     (define-key map (kbd "C-p")    'register-preview-previous)
-    (unless (or executing-kbd-macro (null register-preview-use-preview))
+    (unless executing-kbd-macro
       (register-preview-preview buffer nil types))
     (unwind-protect
          (progn
