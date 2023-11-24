@@ -115,7 +115,7 @@ Do nothing when defining or executing kmacros."
                          (overlay-start (car ovs))
                          (point-min)))
           (setq pos (point))
-          (and ovs (forward-line arg))
+          (forward-line (if ovs arg (1- arg)))
           (when (and (funcall fn)
                      (or (> arg 0) (eql pos (point))))
             (goto-char (funcall posfn)))
@@ -126,15 +126,15 @@ Do nothing when defining or executing kmacros."
             (delete-minibuffer-contents)
             (insert str)))))))
 
-(defun register-preview-next ()
+(defun register-preview-next (&optional arg)
   "Goto next line in register preview buffer."
-  (interactive)
-  (register-preview-forward-line 1))
+  (interactive "p")
+  (register-preview-forward-line arg))
 
-(defun register-preview-previous ()
+(defun register-preview-previous (&optional arg)
   "Goto previous line in register preview buffer."
-  (interactive)
-  (register-preview-forward-line -1))
+  (interactive "p")
+  (register-preview-forward-line (- arg)))
 
 (defun register-preview-get-type (register)
   "Return REGISTER type.
