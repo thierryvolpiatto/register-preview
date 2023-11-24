@@ -127,12 +127,12 @@ Do nothing when defining or executing kmacros."
             (insert str)))))))
 
 (defun register-preview-next (&optional arg)
-  "Goto next line in register preview buffer."
+  "Goto next ARG line(s) in register preview buffer."
   (interactive "p")
   (register-preview-forward-line arg))
 
 (defun register-preview-previous (&optional arg)
-  "Goto previous line in register preview buffer."
+  "Goto previous ARG line(s) in register preview buffer."
   (interactive "p")
   (register-preview-forward-line (- arg)))
 
