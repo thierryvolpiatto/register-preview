@@ -20,12 +20,12 @@ NOTE: `register-read-with-preview` is adviced in this package with `register-pre
         (setq register-alist (delete (assoc register register-alist)
                                      register-alist)))
       
-      (cl-defmethod register-commands-data ((_command (eql register-delete)))
-        (make-register-preview-commands
-         :types '(all)
-         :msg "Delete register `%s'"
-         :act 'delete
-         :smatch t)))
+      (cl-defmethod register-preview-command-info ((_command (eql register-delete)))
+        (make-register-preview-info
+          :types '(all)
+          :msg "Delete register `%s'"
+          :act 'delete
+          :smatch t)))
 ```
 
 This enable register-preview and create a new command `register-delete`.
