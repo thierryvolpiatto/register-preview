@@ -1,6 +1,11 @@
 # register-preview
 Enhance Emacs vanilla register preview
 
+## Warning
+
+This package provide a feature already provided in Emacs-30+ and by
+the way is incompatible with such Emacs versions.
+
 ## Features
 
 - Preview buffer is filtered according to register types.
