@@ -191,7 +191,13 @@ If SHOW-EMPTY is non-nil, show the window even if no registers.
 Argument TYPES (a list) specify the types of register to show, when nil show all
 registers, see `register-preview-get-type' for suitable types.
 Format of each entry is controlled by the variable `register-preview-function'."
-  (let ((registers (register-preview-filter-alist (or types '(all)))))
+  (let ((registers (register-preview-filter-alist (or types '(all))))
+        (register-preview-function
+         (lambda (r)
+           (format "%s: %s\n"
+	           (propertize (string (car r))
+                               'display (single-key-description (car r)))
+	           (register-describe-oneline (car r))))))
     (when (or show-empty (consp registers))
       (with-current-buffer-window
         buffer
