@@ -50,6 +50,13 @@
   "The keys to use for setting a new register."
   :type '(repeat string))
 
+(defcustom register-preview-use-preview t
+  "Always show register preview when non nil.
+When nil don't show preview buffer and exit minibuffer
+immediately without entering RET when the current operation is
+safe."
+  :type 'boolean)
+
 (cl-defstruct register-preview-info
   "Store data for a specific register command.
 TYPES are the types of register supported.
@@ -259,7 +266,7 @@ display such a window regardless."
     (define-key map (kbd "<up>")   'register-preview-previous)
     (define-key map (kbd "C-n")    'register-preview-next)
     (define-key map (kbd "C-p")    'register-preview-previous)
-    (unless executing-kbd-macro
+    (unless (or executing-kbd-macro (null register-preview-use-preview))
       (register-preview-preview buffer nil types))
     (unwind-protect
          (progn
@@ -304,12 +311,16 @@ display such a window regardless."
                                         (minibuffer-message
                                          "Register `%s' is empty" pat))))))
                             (unless (string= pat "")
-                              (if (member pat strs)
-                                  (with-selected-window (minibuffer-window)
-                                    (minibuffer-message msg pat))
-                                (with-selected-window (minibuffer-window)
-                                  (minibuffer-message
-                                   "Register `%s' is empty" pat)))))))))
+                              (with-selected-window (minibuffer-window)
+                                (if (and (member pat strs) (memq act '(set modify)))
+                                    (with-selected-window (minibuffer-window)
+                                      (minibuffer-message msg pat))
+                                  ;; An empty register or an existing
+                                  ;; one but the action is insert or
+                                  ;; jump, don't ask for confirmation
+                                  ;; and exit immediately.
+                                  (setq result pat)
+                                  (exit-minibuffer)))))))))
              (setq result (read-from-minibuffer
                            prompt nil map nil nil (register-preview-get-defaults act))))
            (cl-assert (and result (not (string= result "")))
