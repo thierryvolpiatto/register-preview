@@ -232,9 +232,6 @@ Format of each entry is controlled by the variable `register-preview-function'."
 Prompt with the string PROMPT.
 If `help-char' (or a member of `help-event-list') is pressed,
 display such a window regardless."
-  (cl-assert (< emacs-major-version 30)
-             nil "register-preview package incompatible with Emacs-%s+, please uninstall it"
-             emacs-major-version)
   (let* ((buffer "*Register Preview*")
          (pat "")
          (map (let ((m (make-sparse-keymap)))
