@@ -238,6 +238,7 @@ display such a window regardless."
                 (set-keymap-parent m minibuffer-local-map)
                 m))
          (data (register-preview-command-info this-command))
+         (enable-recursive-minibuffers t)
          types msg result timer act win strs smatch)
     (if data
         (setq types  (register-preview-info-types data)
