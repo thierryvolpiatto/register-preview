@@ -29,7 +29,7 @@ NOTE: `register-read-with-preview` is adviced in this package with `register-pre
         (make-register-preview-info
           :types '(all)
           :msg "Delete register `%s'"
-          :act 'delete
+          :act 'modify
           :smatch t)))
 ```
 
