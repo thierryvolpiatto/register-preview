@@ -258,7 +258,7 @@ Format of each entry is controlled by the variable `register-preview-function'."
     (when (or show-empty (consp registers))
       (with-current-buffer-window
         buffer
-        (cons 'display-buffer-below-selected
+        (cons 'display-buffer-at-bottom
 	      '((window-height . fit-window-to-buffer)
 	        (preserve-size . (nil . t))))
         nil
