@@ -63,6 +63,12 @@ all."
           (const :tag "Use quick preview" nil)
           (const :tag "Never use preview" never)))
 
+(defcustom register-preview-winconf '(display-buffer-at-bottom
+                                      (window-height . fit-window-to-buffer)
+	                              (preserve-size . (nil . t)))
+  "Window configuration for the register preview buffer."
+  :type display-buffer--action-custom-type)
+
 (cl-defstruct register-preview-info
   "Store data for a specific register command.
 TYPES are the types of register supported.
@@ -258,9 +264,7 @@ Format of each entry is controlled by the variable `register-preview-function'."
     (when (or show-empty (consp registers))
       (with-current-buffer-window
         buffer
-        (cons 'display-buffer-at-bottom
-	      '((window-height . fit-window-to-buffer)
-	        (preserve-size . (nil . t))))
+        register-preview-winconf
         nil
         (with-current-buffer standard-output
           (setq cursor-in-non-selected-windows nil)
