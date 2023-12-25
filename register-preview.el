@@ -53,13 +53,17 @@
 (defcustom register-preview-use-preview t
   "Maybe show register preview.
 
-When set to `t' show a preview buffer with navigation and highlighting.
+When set to `t' show a preview buffer with navigation and
+highlighting.
+When set to \\='insist behave as above but allow exiting with same key
+pressed twice instead of exiting with RET.
 When nil show a basic preview buffer and exit minibuffer
 immediately after insertion in minibuffer.
 When set to \\='never behave as above but with no preview buffer at
 all."
   :type '(choice
           (const :tag "Use preview" t)
+          (const :tag "Use preview and exit on second hit" insist)
           (const :tag "Use quick preview" nil)
           (const :tag "Never use preview" never)))
 
@@ -339,7 +343,12 @@ display such a window regardless."
                                                          (member new strs))
                                                      new old))
                                      (delete-minibuffer-contents)
-                                     (insert input)))
+                                     (insert input)
+                                     ;; Exit minibuffer on second hit
+                                     ;; when *-use-preview == insist.
+                                     (when (and (string= new old)
+                                                (eq register-preview-use-preview 'insist))
+                                       (setq noconfirm t))))
                                  (when (and smatch (not (string= input ""))
                                             (not (member input strs)))
                                    (setq input "")
@@ -349,6 +358,10 @@ display such a window regardless."
                                    (setq pat input))))
                              (if (setq win (get-buffer-window buffer))
                                  (with-selected-window win
+                                   (when noconfirm
+                                     ;; Happen only when
+                                     ;; *-use-preview == insist.
+                                     (exit-minibuffer))
                                    (let ((ov (make-overlay (point-min) (point-min))))
                                      (goto-char (point-min))
                                      (remove-overlays)
